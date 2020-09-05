@@ -183,7 +183,16 @@ def astar_corner(maze):
     @return path: a list of tuples containing the coordinates of each state in the computed path
         """
     # TODO: Write your code here
-    return []
+    #find correct order of goals
+    goals = maze.getObjectives()
+
+    #create path between them
+    path = []
+    start = maze.getStart()
+    for goal in goals:
+        path += astarHelper(maze, start, goal)
+        start = goal
+    return path
 
 def astar_multi(maze):
     """
