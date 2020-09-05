@@ -80,17 +80,8 @@ def bfs(maze):
 def manhattanDist(pt1, pt2):
     return abs(pt2[0] - pt1[0]) + abs(pt2[1] - pt1[1])
 
-def astar(maze):
-    """
-    Runs A star for part 1 of the assignment.
-
-    @param maze: The maze to execute the search on.
-
-    @return path: a list of tuples containing the coordinates of each state in the computed path
-    """
-    # TODO: Write your code here
+def astarHelper(maze, start, goal):
     # f = g(=path len) + mandist
-    endGoal = maze.getObjectives()[0]
     heap = []
     visited = {}
     pairs = {}
@@ -102,19 +93,20 @@ def astar(maze):
     curr.h = manhattanDist(maze.getStart(), endGoal)
     curr.f = curr.h + curr.g
     '''
-    #tuple: (f, g, h, x, y)
-    curr = (manhattanDist(maze.getStart(), endGoal), 0, manhattanDist(maze.getStart(), endGoal), maze.getStart()[0], maze.getStart()[1])
+    # tuple: (f, g, h, x, y)
+    curr = (manhattanDist(start, goal), 0, manhattanDist(start, goal), start[0],
+            start[1])
     heapq.heappush(heap, curr)
 
     wonSpot = None
     while len(heap) > 0:
         curr = heapq.heappop(heap)
-        if maze.isObjective(curr[3], curr[4]):
+        if goal == (curr[3], curr[4]):
             wonSpot = curr
             break
         neighbors = maze.getNeighbors(curr[3], curr[4])
         for n in neighbors:
-            newN = (manhattanDist(n, endGoal) + curr[1] + 1, curr[1] + 1, manhattanDist(n, endGoal), n[0], n[1])
+            newN = (manhattanDist(n, goal) + curr[1] + 1, curr[1] + 1, manhattanDist(n, goal), n[0], n[1])
             '''
             newN.x = n[0]
             newN.y = n[1]
@@ -130,12 +122,57 @@ def astar(maze):
 
     curr = wonSpot
     path = []
+    while (curr[3], curr[4]) != start:
+        path.append((curr[3], curr[4]))
+        curr = pairs[curr]
+    path.append((curr[3], curr[4]))
+    path.reverse()
+    return path
+
+def astar(maze):
+    """
+    Runs A star for part 1 of the assignment.
+
+    @param maze: The maze to execute the search on.
+
+    @return path: a list of tuples containing the coordinates of each state in the computed path
+    """
+    # TODO: Write your code here
+    return astarHelper(maze, maze.getStart(), maze.getObjectives()[0])
+    '''
+    # f = g(=path len) + mandist
+    endGoal = maze.getObjectives()[0]
+    heap = []
+    visited = {}
+    pairs = {}
+    #tuple: (f, g, h, x, y)
+    curr = (manhattanDist(maze.getStart(), endGoal), 0, manhattanDist(maze.getStart(), endGoal), maze.getStart()[0], maze.getStart()[1])
+    heapq.heappush(heap, curr)
+
+    wonSpot = None
+    while len(heap) > 0:
+        curr = heapq.heappop(heap)
+        if maze.isObjective(curr[3], curr[4]):
+            wonSpot = curr
+            break
+        neighbors = maze.getNeighbors(curr[3], curr[4])
+        for n in neighbors:
+            newN = (manhattanDist(n, endGoal) + curr[1] + 1, curr[1] + 1, manhattanDist(n, endGoal), n[0], n[1])
+            if (newN[3], newN[4]) not in visited:
+                # print("appending", n)
+                visited[(newN[3], newN[4])] = True
+                heapq.heappush(heap, newN)
+                pairs[newN] = curr
+
+    curr = wonSpot
+    path = []
     while (curr[3], curr[4]) != maze.getStart():
         path.append((curr[3], curr[4]))
         curr = pairs[curr]
     path.append((curr[3], curr[4]))
     path.reverse()
     return path
+    '''
 
 def astar_corner(maze):
     """
