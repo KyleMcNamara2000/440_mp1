@@ -50,7 +50,36 @@ def bfs(maze):
     @return path: a list of tuples containing the coordinates of each state in the computed path
     """
     # TODO: Write your code here
-    return []
+    q = []
+    visited = {}
+    q.append(maze.getStart())
+    pairs = {} #maps from 2nd step -> first step
+
+    wonSpot = None
+    while len(q) > 0:
+        curr = q.pop()
+        visited[curr] = True
+        if maze.isObjective(curr[0], curr[1]):
+            wonSpot = curr
+            break
+        neighbors = maze.getNeighbors(curr[0], curr[1])
+        for n in neighbors:
+            if n not in visited:
+                #print("appending", n)
+                q.append(n)
+                pairs[n] = curr
+
+    #print("done", wonSpot)
+    #now reconstruct path
+    curr = wonSpot
+    path = []
+    while curr != maze.getStart():
+        path.append(curr)
+        curr = pairs[curr]
+    path.append(curr)
+    path.reverse()
+
+    return path
 
 
 def astar(maze):
