@@ -1,3 +1,5 @@
+import heapq
+
 # search.py
 # ---------------
 # Licensing Information:  You are free to use or extend this projects for
@@ -17,6 +19,14 @@ files and classes when code is run, so be careful to not modify anything else.
 # to the positions of the path taken by your search algorithm.
 # maze is a Maze object based on the maze from the file specified by input filename
 # searchMethod is the search method specified by --method flag (bfs,dfs,astar,astar_multi,fast)
+
+class PointData:
+    x = 0
+    y = 0
+    g = 0
+    h = 0
+    f = 0
+
 
 def search(maze, searchMethod):
     return {
@@ -67,6 +77,8 @@ def bfs(maze):
 
     return path
 
+def manhattanDist(pt1, pt2):
+    return abs(pt2[0] - pt1[0]) + abs(pt2[1] - pt1[1])
 
 def astar(maze):
     """
@@ -77,7 +89,53 @@ def astar(maze):
     @return path: a list of tuples containing the coordinates of each state in the computed path
     """
     # TODO: Write your code here
-    return []
+    # f = g(=path len) + mandist
+    endGoal = maze.getObjectives()[0]
+    heap = []
+    visited = {}
+    pairs = {}
+    '''
+    curr = PointData()
+    curr.x = maze.getStart()[0]
+    curr.y = maze.getStart()[1]
+    curr.g = 0
+    curr.h = manhattanDist(maze.getStart(), endGoal)
+    curr.f = curr.h + curr.g
+    '''
+    #tuple: (f, g, h, x, y)
+    curr = (manhattanDist(maze.getStart(), endGoal), 0, manhattanDist(maze.getStart(), endGoal), maze.getStart()[0], maze.getStart()[1])
+    heapq.heappush(heap, curr)
+
+    wonSpot = None
+    while len(heap) > 0:
+        curr = heapq.heappop(heap)
+        if maze.isObjective(curr[3], curr[4]):
+            wonSpot = curr
+            break
+        neighbors = maze.getNeighbors(curr[3], curr[4])
+        for n in neighbors:
+            newN = (manhattanDist(n, endGoal) + curr[1] + 1, curr[1] + 1, manhattanDist(n, endGoal), n[0], n[1])
+            '''
+            newN.x = n[0]
+            newN.y = n[1]
+            newN.g = curr.g + 1
+            newN.h = manhattanDist(n, endGoal)
+            newN.f = newN.h + newN.g
+            '''
+            if (newN[3], newN[4]) not in visited:
+                # print("appending", n)
+                visited[(newN[3], newN[4])] = True
+                heapq.heappush(heap, newN)
+                pairs[newN] = curr
+
+    curr = wonSpot
+    path = []
+    while (curr[3], curr[4]) != maze.getStart():
+        path.append((curr[3], curr[4]))
+        curr = pairs[curr]
+    path.append((curr[3], curr[4]))
+    path.reverse()
+    return path
 
 def astar_corner(maze):
     """
