@@ -187,11 +187,12 @@ def astar_corner(maze):
     goals = maze.getObjectives()
 
     #create path between them
-    path = []
+    path = [maze.getStart()]
     start = maze.getStart()
     for goal in goals:
-        path += astarHelper(maze, start, goal)
+        path += astarHelper(maze, start, goal)[1:]
         start = goal
+    print(path)
     return path
 
 def astar_multi(maze):
