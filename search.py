@@ -43,8 +43,7 @@ def bfs(maze):
 
     wonSpot = None
     while len(q) > 0:
-        curr = q.pop()
-        visited[curr] = True
+        curr = q.pop(0)
         if maze.isObjective(curr[0], curr[1]):
             wonSpot = curr
             break
@@ -52,6 +51,7 @@ def bfs(maze):
         for n in neighbors:
             if n not in visited:
                 # print("appending", n)
+                visited[n] = True
                 q.append(n)
                 pairs[n] = curr
 
