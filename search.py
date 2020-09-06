@@ -174,6 +174,21 @@ def astar(maze):
     return path
     '''
 
+def findGoalOrder(start, goals):
+    #do mst algorithm???
+    #start from start, get lowest weight edge, add to tree if no cycle
+    edges = [] #tuples: (distance, state1, state2)
+    bestPath = [start]
+    remainingVerts = goals
+    #heapq.heappush(heap, newN)
+    curr = start
+    for g in goals:
+        for v in remainingVerts:
+            heapq.heappush(edges, (manhattanDist(curr, v), curr, v))
+
+
+
+
 def astar_corner(maze):
     """
     Runs A star for part 2 of the assignment in the case where there are four corner objectives.
@@ -185,11 +200,24 @@ def astar_corner(maze):
     # TODO: Write your code here
     #find correct order of goals
     goals = maze.getObjectives()
+    min = manhattanDist(maze.getStart(), goals[0])
+    minGoal = goals[0]
+    for g in goals:
+        if manhattanDist(maze.getStart(), g) < min:
+            min = manhattanDist(maze.getStart(), g)
+            minGoal = g
+    newGoals = []
+    newGoals.append(minGoal)
+    for g in goals:
+        if g != minGoal:
+            newGoals.append(g)
+
+
 
     #create path between them
     path = [maze.getStart()]
     start = maze.getStart()
-    for goal in goals:
+    for goal in newGoals:
         path += astarHelper(maze, start, goal)[1:]
         start = goal
     print(path)
