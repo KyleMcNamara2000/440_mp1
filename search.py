@@ -259,8 +259,6 @@ def corner_helper(maze, start, goals, h_type):
             curr7 = curr[7].copy()
             tiebreaker += 1
             newN = (h(n, curr6, h_type, maze) + curr[1] + 1, curr[1] + 1, h(n, curr6, h_type, maze), n[0], n[1], tiebreaker, curr6, curr7)
-            #if (newN[3], newN[4]) in visited:
-                #print("compare:", newN[0], visited[(newN[3], newN[4])], newN[3], newN[4])
             if (newN[3], newN[4]) not in visited or newN[6] not in visited[(newN[3], newN[4])][1]:
                 # print("appending", n)
                 #(newN[7])[(newN[3], newN[4])] = True #visited = True
@@ -291,34 +289,6 @@ def astar_corner(maze):
 
     return corner_helper(maze, maze.getStart(), maze.getObjectives(), "min_md")
 
-
-    '''
-    #find correct order of goals
-    goals = maze.getObjectives()
-    min = manhattanDist(maze.getStart(), goals[0])
-    minGoal = goals[0]
-    for g in goals:
-        if manhattanDist(maze.getStart(), g) < min:
-            min = manhattanDist(maze.getStart(), g)
-            minGoal = g
-    newGoals = []
-    newGoals.append(minGoal)
-    for g in goals:
-        if g != minGoal:
-            newGoals.append(g)
-
-
-
-    #create path between them
-    path = [maze.getStart()]
-    start = maze.getStart()
-    for goal in newGoals:
-        path += astarHelper(maze, start, goal)[1:]
-        start = goal
-    print(path)
-    return path
-'''
-
 def astar_multi(maze):
     """
     Runs A star for part 3 of the assignment in the case where there are
@@ -329,7 +299,7 @@ def astar_multi(maze):
     @return path: a list of tuples containing the coordinates of each state in the computed path
     """
     # TODO: Write your code here
-    return []
+    return corner_helper(maze, maze.getStart(), maze.getObjectives(), "min_md")
 
 
 def fast(maze):
