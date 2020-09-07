@@ -80,7 +80,41 @@ def bfs(maze):
 def manhattanDist(pt1, pt2):
     return abs(pt2[0] - pt1[0]) + abs(pt2[1] - pt1[1])
 
-def astarHelper(maze, start, goal):
+def h(start, goals, h_type, maze = None):
+    if h_type == "md":
+        return manhattanDist(start, goals[0])
+    if h_type == "min_md":
+        #print("goals remaining:", goals)
+        minDist = manhattanDist(start, goals[0])
+        minGoal = goals[0]
+        for i in range(len(goals)):
+            if manhattanDist(start, goals[i]) < minDist:
+                minDist = manhattanDist(start, goals[i])
+                minGoal = goals[i]
+        newGoals = goals.copy()
+        newGoals.remove(minGoal)
+        paths = 0
+        otherDists = 0
+        currGoal = minGoal
+        while paths < len(goals) - 1:
+            minD = manhattanDist(currGoal, newGoals[0])
+            flag = False
+            for g in newGoals:
+                if manhattanDist(currGoal, g) < minD:
+                    minD = manhattanDist(currGoal, g)
+                    currGoal = g
+                    flag = True
+            if flag is False:
+                newGoals.remove(newGoals[0])
+            else:
+                newGoals.remove(currGoal)
+            otherDists += minD
+            paths += 1
+        print("minD:", otherDists)
+        return minDist + otherDists# * max(maze.getDimensions()[0], maze.getDimensions()[1])
+    return 0
+
+def astarHelper(maze, start, goals, h_type):
     # f = g(=path len) + mandist
     heap = []
     visited = {}
@@ -94,19 +128,19 @@ def astarHelper(maze, start, goal):
     curr.f = curr.h + curr.g
     '''
     # tuple: (f, g, h, x, y)
-    curr = (manhattanDist(start, goal), 0, manhattanDist(start, goal), start[0],
+    curr = (h(start, goals, h_type), 0, h(start, goals, h_type), start[0],
             start[1])
     heapq.heappush(heap, curr)
 
     wonSpot = None
     while len(heap) > 0:
         curr = heapq.heappop(heap)
-        if goal == (curr[3], curr[4]):
+        if (curr[3], curr[4]) in goals:
             wonSpot = curr
             break
         neighbors = maze.getNeighbors(curr[3], curr[4])
         for n in neighbors:
-            newN = (manhattanDist(n, goal) + curr[1] + 1, curr[1] + 1, manhattanDist(n, goal), n[0], n[1])
+            newN = (h(n, goals, h_type) + curr[1] + 1, curr[1] + 1, h(n, goals, h_type), n[0], n[1])
             '''
             newN.x = n[0]
             newN.y = n[1]
@@ -138,7 +172,7 @@ def astar(maze):
     @return path: a list of tuples containing the coordinates of each state in the computed path
     """
     # TODO: Write your code here
-    return astarHelper(maze, maze.getStart(), maze.getObjectives()[0])
+    return astarHelper(maze, maze.getStart(), maze.getObjectives(), "md")
     '''
     # f = g(=path len) + mandist
     endGoal = maze.getObjectives()[0]
@@ -187,6 +221,60 @@ def findGoalOrder(start, goals):
             heapq.heappush(edges, (manhattanDist(curr, v), curr, v))
 
 
+def corner_helper(maze, start, goals, h_type):
+    # f = g(=path len) + mandist
+    heap = []
+    visited = {}
+    tiebreaker = 1
+    #         0  1  2  3  4    5           6           7        8
+    # tuple: (f, g, h, x, y, tiebreaker, goals left, visited, currpath)
+    curr = (h(start, goals, h_type, maze), 0, h(start, goals, h_type, maze), start[0],
+            start[1], 0, goals, [])
+    heapq.heappush(heap, curr)
+
+    wonSpot = None
+    while len(heap) > 0:
+        curr = heapq.heappop(heap)
+        '''
+        print("q:", heap)
+        print("visiting new node\n")
+        print("f(x), g(x), h(x) =", curr[0], curr[1], curr[2])
+        print("coords:", curr[3], curr[4])
+        print("goals_left:", curr[6])
+        print("visited:", visited)
+        print("currpath:", curr[7], "\n")
+        '''
+
+        #if we hit a goal, rm from the list
+        if (curr[3], curr[4]) in curr[6]:
+            curr[6].remove((curr[3], curr[4]))
+        #if there's no goals left, break + return path
+        if len(curr[6]) == 0:
+            wonSpot = curr
+            print("done!!!")
+            break
+        neighbors = maze.getNeighbors(curr[3], curr[4])
+        for n in neighbors:
+            curr6 = curr[6].copy()
+            curr7 = curr[7].copy()
+            tiebreaker += 1
+            newN = (h(n, curr6, h_type, maze) + curr[1] + 1, curr[1] + 1, h(n, curr6, h_type, maze), n[0], n[1], tiebreaker, curr6, curr7)
+            if (newN[3], newN[4]) in visited:
+                print("compare:", newN[0], visited[(newN[3], newN[4])], newN[3], newN[4])
+            if (newN[3], newN[4]) not in visited or newN[6] != visited[(newN[3], newN[4])][1]:
+                # print("appending", n)
+                #(newN[7])[(newN[3], newN[4])] = True #visited = True
+                visited[(newN[3], newN[4])] = (newN[0], newN[6])
+                # add to path
+                newN[7].append((curr[3], curr[4]))
+                #print("adding n:", newN, type(newN), type(newN[0]))
+                heapq.heappush(heap, newN)
+    if wonSpot is None:
+        print("no solution found")
+        return []
+    wonSpot[7].append((wonSpot[3], wonSpot[4]))
+    print(wonSpot[7])
+    return wonSpot[7]
 
 
 def astar_corner(maze):
@@ -198,6 +286,11 @@ def astar_corner(maze):
     @return path: a list of tuples containing the coordinates of each state in the computed path
         """
     # TODO: Write your code here
+
+    return corner_helper(maze, maze.getStart(), maze.getObjectives(), "min_md")
+
+
+    '''
     #find correct order of goals
     goals = maze.getObjectives()
     min = manhattanDist(maze.getStart(), goals[0])
@@ -222,6 +315,7 @@ def astar_corner(maze):
         start = goal
     print(path)
     return path
+'''
 
 def astar_multi(maze):
     """
