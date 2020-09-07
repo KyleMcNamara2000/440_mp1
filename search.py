@@ -261,10 +261,12 @@ def corner_helper(maze, start, goals, h_type):
             newN = (h(n, curr6, h_type, maze) + curr[1] + 1, curr[1] + 1, h(n, curr6, h_type, maze), n[0], n[1], tiebreaker, curr6, curr7)
             #if (newN[3], newN[4]) in visited:
                 #print("compare:", newN[0], visited[(newN[3], newN[4])], newN[3], newN[4])
-            if (newN[3], newN[4]) not in visited or newN[6] != visited[(newN[3], newN[4])][1]:
+            if (newN[3], newN[4]) not in visited or newN[6] not in visited[(newN[3], newN[4])][1]:
                 # print("appending", n)
                 #(newN[7])[(newN[3], newN[4])] = True #visited = True
-                visited[(newN[3], newN[4])] = (newN[0], newN[6])
+                if (newN[3], newN[4]) not in visited:
+                    visited[(newN[3], newN[4])] = ((newN[3], newN[4]), [])
+                visited[(newN[3], newN[4])][1].append(newN[6])
                 # add to path
                 newN[7].append((curr[3], curr[4]))
                 #print("adding n:", newN, type(newN), type(newN[0]))
