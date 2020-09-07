@@ -111,7 +111,7 @@ def h(start, goals, h_type, maze = None):
             otherDists += minD
             paths += 1
         #print("minD:", otherDists)
-        return minDist + otherDists# * max(maze.getDimensions()[0], maze.getDimensions()[1])
+        return minDist + otherDists / 3# * max(maze.getDimensions()[0], maze.getDimensions()[1])
     return 0
 
 def astarHelper(maze, start, goals, h_type):
