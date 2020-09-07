@@ -110,7 +110,7 @@ def h(start, goals, h_type, maze = None):
                 newGoals.remove(currGoal)
             otherDists += minD
             paths += 1
-        print("minD:", otherDists)
+        #print("minD:", otherDists)
         return minDist + otherDists# * max(maze.getDimensions()[0], maze.getDimensions()[1])
     return 0
 
@@ -251,7 +251,7 @@ def corner_helper(maze, start, goals, h_type):
         #if there's no goals left, break + return path
         if len(curr[6]) == 0:
             wonSpot = curr
-            print("done!!!")
+            #print("done!!!")
             break
         neighbors = maze.getNeighbors(curr[3], curr[4])
         for n in neighbors:
@@ -259,8 +259,8 @@ def corner_helper(maze, start, goals, h_type):
             curr7 = curr[7].copy()
             tiebreaker += 1
             newN = (h(n, curr6, h_type, maze) + curr[1] + 1, curr[1] + 1, h(n, curr6, h_type, maze), n[0], n[1], tiebreaker, curr6, curr7)
-            if (newN[3], newN[4]) in visited:
-                print("compare:", newN[0], visited[(newN[3], newN[4])], newN[3], newN[4])
+            #if (newN[3], newN[4]) in visited:
+                #print("compare:", newN[0], visited[(newN[3], newN[4])], newN[3], newN[4])
             if (newN[3], newN[4]) not in visited or newN[6] != visited[(newN[3], newN[4])][1]:
                 # print("appending", n)
                 #(newN[7])[(newN[3], newN[4])] = True #visited = True
@@ -273,7 +273,7 @@ def corner_helper(maze, start, goals, h_type):
         print("no solution found")
         return []
     wonSpot[7].append((wonSpot[3], wonSpot[4]))
-    print(wonSpot[7])
+    #print(wonSpot[7])
     return wonSpot[7]
 
 
