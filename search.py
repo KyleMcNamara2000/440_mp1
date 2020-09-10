@@ -226,17 +226,7 @@ def h(start, goals, h_type, graph = None):
         #print("mst dist:", graph.mst(newGoals))
         return minDist + graph.mst(newGoals, minGoal)
     if h_type == "mst_fast":
-        minDist = manhattanDist(start, goals[0])
-        minGoal = goals[0]
-        for i in range(len(goals)):
-            if manhattanDist(start, goals[i]) < minDist:
-                minDist = manhattanDist(start, goals[i])
-                minGoal = goals[i]
-        newGoals = goals.copy()
-        newGoals.remove(minGoal)
-        #print("mst dist:", graph.mst(newGoals))
-        constant = 5
-        return minDist + graph.mst(newGoals, minGoal) * constant
+        return 0
     return 0
 
 def astarHelper(maze, start, goals, h_type):
