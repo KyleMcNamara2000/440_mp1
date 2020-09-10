@@ -225,6 +225,18 @@ def h(start, goals, h_type, graph = None):
         newGoals.remove(minGoal)
         #print("mst dist:", graph.mst(newGoals))
         return minDist + graph.mst(newGoals, minGoal)
+    if h_type == "mst_fast":
+        minDist = manhattanDist(start, goals[0])
+        minGoal = goals[0]
+        for i in range(len(goals)):
+            if manhattanDist(start, goals[i]) < minDist:
+                minDist = manhattanDist(start, goals[i])
+                minGoal = goals[i]
+        newGoals = goals.copy()
+        newGoals.remove(minGoal)
+        #print("mst dist:", graph.mst(newGoals))
+        constant = 5
+        return minDist + graph.mst(newGoals, minGoal) * constant
     return 0
 
 def astarHelper(maze, start, goals, h_type):
@@ -427,4 +439,7 @@ def fast(maze):
     @return path: a list of tuples containing the coordinates of each state in the computed path
     """
     # TODO: Write your code here
-    return []
+    # setup graph stuff
+    g = Graph(maze.getObjectives())
+    # run old corner code w new mst h(x)
+    return corner_helper(maze, maze.getStart(), maze.getObjectives(), "mst_fast", g)
