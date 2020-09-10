@@ -20,11 +20,74 @@ files and classes when code is run, so be careful to not modify anything else.
 # maze is a Maze object based on the maze from the file specified by input filename
 # searchMethod is the search method specified by --method flag (bfs,dfs,astar,astar_multi,fast)
 
+def manhattanDist(pt1, pt2):
+    return abs(pt2[0] - pt1[0]) + abs(pt2[1] - pt1[1])
+
+
+#graph def
+class Node:
+    value = 0
+    coord = (0, 0)
+    edge_list = []
+
+    def __init__(self, in_value, in_coord, in_edge_list):
+        self.value = in_value
+        self.edge_list = in_edge_list
+        self.coord = in_coord
+
+    def get_info(self):
+        print("Node with value", self.value, "and coord", self.coord)
+
+class Edge:
+    start = None
+    end = None
+    length = 0
+
+    def __init__(self, in_start, in_end, in_length):
+        self.start = in_start
+        self.end = in_end
+        self.length = in_length
+
+    def get_info(self):
+        print("Edge from", self.start, "to", self.end, "with length", self.length)
+
+class Graph:
+    node_list = {} #maps point -> node
+    msts = {} #maps set of remaining goals -> distance
+
+    def __init__(self, goals):
+        #construct graph
+        for goal in goals:
+            #create edges for goal
+            edges = []
+            for g in goals:
+                if g != goal:
+                    e = Edge(goal, g, manhattanDist(goal, g))
+                    edges.append(e)
+                    #print("adding edge to", goal)
+                    #e.get_info()
+
+            n = Node(float('inf'), goal, edges)
+            self.node_list[goal] = n
+
+    #prims alg
+    def mst(self, goalsLeft):
+        if tuple(goalsLeft) in self.msts.keys():
+            #print("branch 1")
+            return self.msts[tuple(goalsLeft)]
+        else:
+            print("branch 2")
+            goalsLeft2 = goalsLeft.copy()
+            edgeSum = 0
+            #add prim alg code here
+
+            #end prim code
+            self.msts[tuple(goalsLeft2)] = edgeSum
+            return 0
+
+
 #keeps track of previous minLen values so dont have to recalculate
 minLens = {} #map set of remaining goals -> distance
-#same but keeps track of msts for part 3
-minMSTs = {} #map set of remaining goals -> distance
-
 
 
 def search(maze, searchMethod):
@@ -76,10 +139,7 @@ def bfs(maze):
 
     return path
 
-def manhattanDist(pt1, pt2):
-    return abs(pt2[0] - pt1[0]) + abs(pt2[1] - pt1[1])
-
-def h(start, goals, h_type, maze = None):
+def h(start, goals, h_type, graph = None):
     if h_type == "md":
         return manhattanDist(start, goals[0])
     if h_type == "min_md":
@@ -87,7 +147,7 @@ def h(start, goals, h_type, maze = None):
         minDist = manhattanDist(start, goals[0])
         minGoal = goals[0]
         for i in range(len(goals)):
-            if manhattanDist(start, goals[i]) <= minDist:
+            if manhattanDist(start, goals[i]) < minDist:
                 minDist = manhattanDist(start, goals[i])
                 minGoal = goals[i]
         newGoals = goals.copy()
@@ -106,7 +166,7 @@ def h(start, goals, h_type, maze = None):
                 minD = manhattanDist(currGoal, newGoals[0])
                 flag = False
                 for g in newGoals:
-                    if manhattanDist(currGoal, g) <= minD:
+                    if manhattanDist(currGoal, g) < minD:
                         minD = manhattanDist(currGoal, g)
                         currGoal = g
                         flag = True
@@ -120,8 +180,16 @@ def h(start, goals, h_type, maze = None):
         #print("minD:", otherDists)
         return minDist + otherDists / 3# * max(maze.getDimensions()[0], maze.getDimensions()[1])
     if h_type == "mst":
-        print("hi")
-        return 0
+        minDist = manhattanDist(start, goals[0])
+        minGoal = goals[0]
+        for i in range(len(goals)):
+            if manhattanDist(start, goals[i]) < minDist:
+                minDist = manhattanDist(start, goals[i])
+                minGoal = goals[i]
+        newGoals = goals.copy()
+        newGoals.remove(minGoal)
+        print("mst dist:", graph.mst(newGoals))
+        return minDist + graph.mst(newGoals)
     return 0
 
 def astarHelper(maze, start, goals, h_type):
@@ -231,14 +299,14 @@ def findGoalOrder(start, goals):
             heapq.heappush(edges, (manhattanDist(curr, v), curr, v))
 
 #also helper for part 3
-def corner_helper(maze, start, goals, h_type):
+def corner_helper(maze, start, goals, h_type, graph = None):
     # f = g(=path len) + mandist
     heap = []
     visited = {}
     tiebreaker = 1
     #         0  1  2  3  4    5           6           7        8
     # tuple: (f, g, h, x, y, tiebreaker, goals left, visited, currpath)
-    curr = (h(start, goals, h_type, maze), 0, h(start, goals, h_type, maze), start[0],
+    curr = (h(start, goals, h_type, graph), 0, h(start, goals, h_type, graph), start[0],
             start[1], 0, goals, [])
     heapq.heappush(heap, curr)
 
@@ -268,7 +336,7 @@ def corner_helper(maze, start, goals, h_type):
             curr6 = curr[6].copy()
             curr7 = curr[7].copy()
             tiebreaker += 1
-            newN = (h(n, curr6, h_type, maze) + curr[1] + 1, curr[1] + 1, h(n, curr6, h_type, maze), n[0], n[1], tiebreaker, curr6, curr7)
+            newN = (h(n, curr6, h_type, graph) + curr[1] + 1, curr[1] + 1, h(n, curr6, h_type, graph), n[0], n[1], tiebreaker, curr6, curr7)
             if (newN[3], newN[4]) not in visited or newN[6] not in visited[(newN[3], newN[4])][1]:
                 # print("appending", n)
                 #(newN[7])[(newN[3], newN[4])] = True #visited = True
@@ -309,7 +377,10 @@ def astar_multi(maze):
     @return path: a list of tuples containing the coordinates of each state in the computed path
     """
     # TODO: Write your code here
-    return corner_helper(maze, maze.getStart(), maze.getObjectives(), "min_md")
+    #setup graph stuff
+    g = Graph(maze.getObjectives())
+    #run old corner code w new mst h(x)
+    return corner_helper(maze, maze.getStart(), maze.getObjectives(), "mst", g)
 
 
 def fast(maze):
