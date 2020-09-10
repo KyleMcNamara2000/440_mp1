@@ -22,6 +22,10 @@ files and classes when code is run, so be careful to not modify anything else.
 
 #keeps track of previous minLen values so dont have to recalculate
 minLens = {} #map set of remaining goals -> distance
+#same but keeps track of msts for part 3
+minMSTs = {} #map set of remaining goals -> distance
+
+
 
 def search(maze, searchMethod):
     return {
@@ -83,12 +87,11 @@ def h(start, goals, h_type, maze = None):
         minDist = manhattanDist(start, goals[0])
         minGoal = goals[0]
         for i in range(len(goals)):
-            if manhattanDist(start, goals[i]) < minDist:
+            if manhattanDist(start, goals[i]) <= minDist:
                 minDist = manhattanDist(start, goals[i])
                 minGoal = goals[i]
         newGoals = goals.copy()
         newGoals.remove(minGoal)
-        newGoals.sort()
 
         paths = 0
         otherDists = 0
@@ -103,7 +106,7 @@ def h(start, goals, h_type, maze = None):
                 minD = manhattanDist(currGoal, newGoals[0])
                 flag = False
                 for g in newGoals:
-                    if manhattanDist(currGoal, g) < minD:
+                    if manhattanDist(currGoal, g) <= minD:
                         minD = manhattanDist(currGoal, g)
                         currGoal = g
                         flag = True
@@ -227,7 +230,7 @@ def findGoalOrder(start, goals):
         for v in remainingVerts:
             heapq.heappush(edges, (manhattanDist(curr, v), curr, v))
 
-
+#also helper for part 3
 def corner_helper(maze, start, goals, h_type):
     # f = g(=path len) + mandist
     heap = []
