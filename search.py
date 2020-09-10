@@ -48,6 +48,12 @@ class Edge:
         self.end = in_end
         self.length = in_length
 
+    def __lt__(self, other):
+        return self.length < other.length
+
+    def __gt__(self, other):
+        return self.length > other.length
+
     def get_info(self):
         print("Edge from", self.start, "to", self.end, "with length", self.length)
 
@@ -71,18 +77,47 @@ class Graph:
             self.node_list[goal] = n
 
     #prims alg
-    def mst(self, goalsLeft):
+    def mst(self, goalsLeft, start):
         if tuple(goalsLeft) in self.msts.keys():
             #print("branch 1")
             return self.msts[tuple(goalsLeft)]
         else:
-            print("branch 2")
+            #print("branch 2")
             goalsLeft2 = goalsLeft.copy()
             edgeSum = 0
             #add prim alg code here
+            edgeQueue = []
+            currGoal = start
+            while len(goalsLeft) > 0:
+                #explore this node
+                curr = self.node_list[currGoal]
+                #add all edges to queue
+                edges = curr.edge_list
+                for e in edges:
+                    if e.start in goalsLeft or e.end in goalsLeft:
+                        heapq.heappush(edgeQueue, e)
+                #mark this node as visited TODO: make more efficient later
+                if currGoal in goalsLeft:
+                    goalsLeft.remove(currGoal)
+                #follow lowest edge to new node
+                flag = False
+                while flag is False and len(edgeQueue) > 0:
+                    lowEdge = heapq.heappop(edgeQueue)
+                    if lowEdge.start in goalsLeft:
+                        currGoal = lowEdge.start
+                        edgeSum += lowEdge.length
+                        flag = True
+                    elif lowEdge.end in goalsLeft:
+                        currGoal = lowEdge.end
+                        edgeSum += lowEdge.length
+                    flag = True
+                if flag is False:
+                    #print("queue empty")
+                    break
 
             #end prim code
             self.msts[tuple(goalsLeft2)] = edgeSum
+            #print("esum:", edgeSum)
             return 0
 
 
@@ -188,8 +223,8 @@ def h(start, goals, h_type, graph = None):
                 minGoal = goals[i]
         newGoals = goals.copy()
         newGoals.remove(minGoal)
-        print("mst dist:", graph.mst(newGoals))
-        return minDist + graph.mst(newGoals)
+        #print("mst dist:", graph.mst(newGoals))
+        return minDist + graph.mst(newGoals, minGoal)
     return 0
 
 def astarHelper(maze, start, goals, h_type):
