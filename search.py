@@ -430,6 +430,6 @@ def fast(maze):
     """
     # TODO: Write your code here
     # setup graph stuff
-    g = Graph(maze.getObjectives())
+    #g = Graph(maze.getObjectives())
     # run old corner code w new mst h(x)
-    return corner_helper(maze, maze.getStart(), maze.getObjectives(), "mst_fast", g)
+    return corner_helper(maze, maze.getStart(), maze.getObjectives(), "mst_fast")
