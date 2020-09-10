@@ -20,13 +20,8 @@ files and classes when code is run, so be careful to not modify anything else.
 # maze is a Maze object based on the maze from the file specified by input filename
 # searchMethod is the search method specified by --method flag (bfs,dfs,astar,astar_multi,fast)
 
-class PointData:
-    x = 0
-    y = 0
-    g = 0
-    h = 0
-    f = 0
-
+#keeps track of previous minLen values so dont have to recalculate
+minLens = {} #map set of remaining goals -> distance
 
 def search(maze, searchMethod):
     return {
@@ -93,25 +88,37 @@ def h(start, goals, h_type, maze = None):
                 minGoal = goals[i]
         newGoals = goals.copy()
         newGoals.remove(minGoal)
+        newGoals.sort()
+
         paths = 0
         otherDists = 0
-        currGoal = minGoal
-        while paths < len(goals) - 1:
-            minD = manhattanDist(currGoal, newGoals[0])
-            flag = False
-            for g in newGoals:
-                if manhattanDist(currGoal, g) < minD:
-                    minD = manhattanDist(currGoal, g)
-                    currGoal = g
-                    flag = True
-            if flag is False:
-                newGoals.remove(newGoals[0])
-            else:
-                newGoals.remove(currGoal)
-            otherDists += minD
-            paths += 1
+        if tuple(newGoals) in minLens.keys():
+            #print("DP")
+            otherDists = minLens[tuple(newGoals)]
+        else:
+            # if unsearched -> do the mindist search
+            newGoals2 = newGoals.copy()
+            currGoal = minGoal
+            while paths < len(goals) - 1:
+                minD = manhattanDist(currGoal, newGoals[0])
+                flag = False
+                for g in newGoals:
+                    if manhattanDist(currGoal, g) < minD:
+                        minD = manhattanDist(currGoal, g)
+                        currGoal = g
+                        flag = True
+                if flag is False:
+                    newGoals.remove(newGoals[0])
+                else:
+                    newGoals.remove(currGoal)
+                otherDists += minD
+                paths += 1
+            minLens[tuple(newGoals2)] = otherDists
         #print("minD:", otherDists)
         return minDist + otherDists / 3# * max(maze.getDimensions()[0], maze.getDimensions()[1])
+    if h_type == "mst":
+        print("hi")
+        return 0
     return 0
 
 def astarHelper(maze, start, goals, h_type):
